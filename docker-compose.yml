@@ -1,8 +1,10 @@
 services:
   backend_base:
     build: .
+    tty: true
     volumes:
-      - .:/code
+      - .:/usr/src/app
+    working_dir: /usr/src/app
     environment:
       DATABASE_URL: mysql://root:root@mysql:3306/enoughrecipes
 
@@ -15,6 +17,7 @@ services:
       - broker
     ports:
       - "8000:8000"
+    command: "poetry run python manage.py runserver 0.0.0.0:8000"
 
   consumer:
     extends:
@@ -70,10 +73,13 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
 
   elasticsearch:
-    image: elasticsearch
+    image: elasticsearch:8.2.0
     ports:
       - "9200:9200"
       - "9300:9300"
+    volumes:
+      - ./esdata:/usr/share/elasticsearch/data
 
 volumes:
   my-datavolume:
+  esdata:
