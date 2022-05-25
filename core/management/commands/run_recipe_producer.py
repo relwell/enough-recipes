@@ -1,7 +1,7 @@
 """Pull recipes from recipe wiki."""
 from django.core.management.base import BaseCommand
 
-from recipes import run_recipe_producer
+from core.recipes import run_recipe_producer
 
 
 class Command(BaseCommand):

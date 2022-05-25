@@ -6,13 +6,18 @@ import logging
 from typing import Optional
 
 import requests
+from boltons.iterutils import first
+from bs4 import BeautifulSoup
+from django.conf import settings
 from elasticsearch import helpers
 from kafka import KafkaConsumer, KafkaProducer
+
+
 from core.es import get_es_client
 from core import models
 
 RECIPE_MAPPING = {
-    "recipe_id": {"type": "number"},
+    "recipe_id": {"type": "integer"},
     "recipe": {
         "type": "text",
         "analyzer": "text_strip_html",
@@ -52,18 +57,27 @@ class RecipePage:
 
     @functools.cached_property
     def html(self) -> str:
-        """Retrieve HTMl from visual editor."""
-        resp = requests.get(
-            f"https://recipes.fandom.com/api.php?action=visualeditor&format=json&paction=parse&page={self.title}&uselang=en&formatversion=2"
-        ).json()
-        return resp["visualeditor"]["content"]
+        """Retrieve HTML from page."""
+        resp = requests.get(self.url)
+        return resp.content
+
+    @functools.cached_property
+    def inner_html(self) -> str:
+        """Retrieve inner HTML."""
+        inner = first(
+            BeautifulSoup(self.html).html.find_all("div", {"class": "mw-parser-output"})
+        )
+        if inner:
+            return inner.html.decode()
+        return ""
 
     @property
     def to_json_message(self, include_html=False) -> dict:
         """Generate a message for Kafka."""
         dct = {"title": self.title, "url": self.url}
         if include_html:
-            dct["html"] = self.html
+            dct["html"] = self.inner_html
+        print(json.dumps(dct))
         return dct
 
 
@@ -104,9 +118,14 @@ class RecipePageGenerator:
 
 def run_recipe_producer():
     """Run the producer for recipe indexing."""
-    producer = KafkaProducer(value_serializer=lambda v: json.dumps(v).encode("utf-8"))
+    producer = KafkaProducer(
+        bootstrap_servers=settings.KAFKA_BROKERS,
+        value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+    )
     for page in RecipePageGenerator():
-        producer.send("recipes", page.to_json_message)
+        json_message = page.to_json_message
+        logging.debug("Sending message %s", json_message)
+        producer.send("recipes", json_message)
 
 
 def handle_recipe(recipe_json_string: str) -> Optional[models.Recipe]:
@@ -114,9 +133,9 @@ def handle_recipe(recipe_json_string: str) -> Optional[models.Recipe]:
     try:
         recipe_json = json.loads(recipe_json_string)
         recipe_page = RecipePage(recipe_json)
-        recipe = Recipe.objects.filter(url=recipe_page.url).first()
+        recipe = models.Recipe.objects.filter(url=recipe_page.url).first()
         if not recipe:
-            recipe = Recipe.from_recipe_page(recipe_page)
+            recipe = models.Recipe.from_recipe_page(recipe_page)
         recipe.title = recipe_page.title
         recipe.url = recipe_page.url
         recipe.html = recipe_page.html
@@ -130,17 +149,23 @@ def handle_recipe(recipe_json_string: str) -> Optional[models.Recipe]:
 
 def yield_recipe_messages():
     """Yields a dict for generating the appropriate doc"""
-    for recipe_json in KafkaConsumer("recipes"):
-        recipe = handle_recipe(recipe_json)
+    for consumer_message in KafkaConsumer(
+        "recipes",
+        group_id="recipe_consumer",
+        bootstrap_servers=settings.KAFKA_BROKERS,
+    ):
+        recipe = handle_recipe(consumer_message.value)
         if recipe:
-            yield recipe.to_es_document
+            es_document = recipe.to_es_document
+            logging.debug("Yielding ES document: %s", es_document)
+            yield es_document
 
 
 def run_recipe_consumer():
-    """Run the consumer."""
+    """Run the consumer, wrapped in an ES context."""
     for okay, result in helpers.streaming_bulk(
         get_es_client(),
-        yield_recipe_messages,
+        yield_recipe_messages(),
         chunk_size=50,
     ):
         logging.debug(okay)

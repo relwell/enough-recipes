@@ -1,40 +1,56 @@
+version: "3.9"
+
 services:
-  backend_base:
+  app: &app
     build: .
     tty: true
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app
-    environment:
+    environment: &app_env
       DATABASE_URL: mysql://root:root@mysql:3306/enoughrecipes
-
-  app:
-    extends:
-      service: backend_base
+      KAFKA_BROKERS: "broker:9092"
+      ES_HOSTS: "http://elasticsearch:9200"
     links:
-      - mysql
+      - "mysql:mysql"
+      - "elasticsearch:elasticsearch"
+      - "broker:broker"
+    depends_on:
       - elasticsearch
+      - mysql
       - broker
     ports:
       - "8000:8000"
     command: "poetry run python manage.py runserver 0.0.0.0:8000"
 
   consumer:
-    extends:
-      service: backend_base
+    <<: *app
     links:
-      - mysql
+      - "mysql:mysql"
+      - "elasticsearch:elasticsearch"
+      - "broker:broker"
+    depends_on:
       - elasticsearch
+      - mysql
       - broker
+    environment:
+      <<: *app_env
+      DJANGO_LOG_LEVEL: DEBUG
     command: poetry run python manage.py run_recipe_consumer
 
   producer:
-    extends:
-      service: backend_base
+    <<: *app
     links:
-      - mysql
+      - "mysql:mysql"
+      - "elasticsearch:elasticsearch"
+      - "broker:broker"
+    depends_on:
       - elasticsearch
+      - mysql
       - broker
+    environment:
+      <<: *app_env
+      DJANGO_LOG_LEVEL: DEBUG
     command: poetry run python manage.py run_recipe_producer
 
   mysql:
@@ -67,7 +83,7 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092,PLAINTEXT_INTERNAL://localhost:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
@@ -77,6 +93,11 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
+    environment:
+      - xpack.security.enabled=false
+      - "discovery.type=single-node"
+      - "cluster.routing.rebalance.enable=none"
+      - "cluster.routing.allocation.disk.threshold_enabled=false"
     volumes:
       - ./esdata:/usr/share/elasticsearch/data
 

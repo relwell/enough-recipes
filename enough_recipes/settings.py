@@ -127,4 +127,6 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-ES_HOSTS = os.environ.get("ES_HOSTS", "localhost:9200")
+ES_HOSTS = os.environ.get("ES_HOSTS", "http://localhost:9200")
+
+KAFKA_BROKERS = os.environ.get("KAFKA_BROKERS", "localhost:9092")

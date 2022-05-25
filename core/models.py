@@ -26,7 +26,6 @@ class Recipe(models.Model):
         return {
             "_op_type": "index",
             "_index": "recipes",
-            "_type": "recipe",
             "_id": self.id,
             "title": self.title,
             "url": self.url,
