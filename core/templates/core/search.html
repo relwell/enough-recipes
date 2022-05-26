@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block content %}
+  <h1>Enough Recipes!</h1>
+  <div id="description">There are already enough recipes on the web. Let's find 'em.</div>
+  <form action="/search" method="get">
+    {{ form }}
+    <button type="submit" value="Submit">Submit</button>
+  </form>
+  {% if query %}
+  <div id="search-results">
+    <h3>Showing results for {{query}}</h3>
+    <div id="search-results-inner">
+      {% for hit in hits %}
+      <article>
+        <h1>{{hit.title}}</h3>
+        <div class="recipe-body">
+          {{hit.recipe | safe}}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}

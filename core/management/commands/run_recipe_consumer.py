@@ -13,5 +13,6 @@ class Command(BaseCommand):
 
     def handle(self, *_args, **_options):
         """Consume recipe messages from Kafka for indexing."""
+        logging.basicConfig(level="DEBUG")
         logging.info("Starting consumer...")
         run_recipe_consumer()

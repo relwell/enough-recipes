@@ -48,43 +48,43 @@ class RecipePage:
     @property
     def url(self) -> str:
         """Return the URL of the page."""
-        return f"https://recipes.fandom.com/{self._data['url']}"
+        return self._data["url"]
 
     @property
     def title(self) -> str:
-        """Return the title of the page without the wiki prefix."""
-        return self._data["url"].replace("/wiki/", "")
+        """Return page title."""
+        return self._data["title"]
 
     @functools.cached_property
     def html(self) -> str:
         """Retrieve HTML from page."""
-        resp = requests.get(self.url)
+        resp = requests.get(f"https://recipes.fandom.com{self.url}")
         return resp.content
 
     @functools.cached_property
     def inner_html(self) -> str:
         """Retrieve inner HTML."""
         inner = first(
-            BeautifulSoup(self.html).html.find_all("div", {"class": "mw-parser-output"})
+            BeautifulSoup(self.html, "html.parser").html.find_all(
+                "div", {"class": "mw-parser-output"}
+            )
         )
         if inner:
-            return inner.html.decode()
+            return inner.decode()
         return ""
 
-    @property
     def to_json_message(self, include_html=False) -> dict:
         """Generate a message for Kafka."""
         dct = {"title": self.title, "url": self.url}
         if include_html:
             dct["html"] = self.inner_html
-        print(json.dumps(dct))
         return dct
 
 
 class RecipePageGenerator:
     """Allows us to iterate on recipe pages."""
 
-    def __init__(self, offset=None):
+    def __init__(self, offset=None, **_kwargs):
         """Initialize the class."""
         self.pages = []
         self.offset = offset
@@ -116,14 +116,14 @@ class RecipePageGenerator:
         return RecipePage(self.pages.pop())
 
 
-def run_recipe_producer():
+def run_recipe_producer(*_args, **kwargs):
     """Run the producer for recipe indexing."""
     producer = KafkaProducer(
         bootstrap_servers=settings.KAFKA_BROKERS,
         value_serializer=lambda v: json.dumps(v).encode("utf-8"),
     )
-    for page in RecipePageGenerator():
-        json_message = page.to_json_message
+    for page in RecipePageGenerator(**kwargs):
+        json_message = page.to_json_message()
         logging.debug("Sending message %s", json_message)
         producer.send("recipes", json_message)
 
@@ -138,7 +138,7 @@ def handle_recipe(recipe_json_string: str) -> Optional[models.Recipe]:
             recipe = models.Recipe.from_recipe_page(recipe_page)
         recipe.title = recipe_page.title
         recipe.url = recipe_page.url
-        recipe.html = recipe_page.html
+        recipe.html = recipe_page.inner_html
         recipe.source = "Recipes Wiki"
         recipe.save()
         return recipe
@@ -157,7 +157,7 @@ def yield_recipe_messages():
         recipe = handle_recipe(consumer_message.value)
         if recipe:
             es_document = recipe.to_es_document
-            logging.debug("Yielding ES document: %s", es_document)
+            logging.warning("Yielding ES document: %s", es_document)
             yield es_document
 
 
@@ -170,3 +170,26 @@ def run_recipe_consumer():
     ):
         logging.debug(okay)
         logging.debug(result)
+
+
+def find_recipes(query):
+    """Find recipes."""
+    return get_es_client().search(
+        index="recipes", body={"query": {"match": {"text": query}}}, size=20
+    )
+
+
+class RecipeHit:
+    def __init__(self, hit):
+        """Initialize the class."""
+        self.hit = hit
+
+    @property
+    def title(self):
+        """Return title."""
+        return self.hit["_source"]["title"]
+
+    @property
+    def recipe(self):
+        """Return recipe."""
+        return self.hit["_source"]["recipe"]

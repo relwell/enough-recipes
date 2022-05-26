@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+
+{% block content %}
+  <h1>Enough Recipes!</h1>
+  <div id="description">There are already enough recipes on the web. Let's find 'em.</div>
+  <form action="/search" method="get">
+    {{ form }}
+    <button type="submit" value="Submit">Submit</button>
+  </form>
+{% endblock %}

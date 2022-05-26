@@ -9,7 +9,10 @@ class Command(BaseCommand):
 
     help = "Pull recipes from the recipe wiki."
 
-    def handle(self, *_args, **_options):
+    def add_arguments(self, parser):
+        """Add arguments."""
+        parser.add_argument("--offset", type=str)
+
+    def handle(self, *_args, **kwargs):
         """Produce recipes."""
-        # todo: add ability to resume from latest instance in the DB
-        run_recipe_producer()
+        run_recipe_producer(**kwargs)

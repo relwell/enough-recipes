@@ -29,6 +29,10 @@ class Recipe(models.Model):
             "_id": self.id,
             "title": self.title,
             "url": self.url,
-            "html": self.html,
+            "recipe": self.html,
             "source": self.source,
         }
+
+    def __str__(self):
+        """Cast to string."""
+        return f"{self.title} ({self.id})"
