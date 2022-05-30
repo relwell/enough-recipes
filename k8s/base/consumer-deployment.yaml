@@ -1,0 +1,63 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f../docker-compose.yml
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: consumer
+  name: consumer
+  namespace: enough-recipes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: consumer
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f../docker-compose.yml
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: consumer
+    spec:
+      imagePullSecrets:
+        - name: dr
+      containers:
+        - args:
+            - poetry
+            - run
+            - python
+            - manage.py
+            - run_recipe_consumer
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ersecrets
+                  key: database_url
+                  optional: false
+            - name: ES_HOSTS
+              valueFrom:
+                secretKeyRef:
+                  name: ersecrets
+                  key: es_hosts
+                  optional: false
+            - name: KAFKA_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: ersecrets
+                  key: kafka_brokers
+          image: relwell/enough-recipes:latest
+          imagePullPolicy: Always
+          name: consumer
+          resources: {}
+          tty: true
+          workingDir: /usr/src/app
+      restartPolicy: Always
+status: {}

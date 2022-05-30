@@ -1,8 +1,9 @@
-version: "3.9"
+version: "3"
 
 services:
   app: &app
     build: .
+    image: relwell/enough-recipes
     tty: true
     volumes:
       - .:/usr/src/app
