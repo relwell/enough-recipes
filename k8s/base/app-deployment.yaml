@@ -8,6 +8,7 @@ metadata:
   creationTimestamp: null
   labels:
     io.kompose.service: app
+    app: app
   name: app
   namespace: enough-recipes
 spec:
@@ -35,7 +36,7 @@ spec:
             - python
             - manage.py
             - runserver
-            - 0.0.0.0:8000
+            - 0.0.0.0:80
           env:
             - name: DATABASE_URL
               valueFrom:
@@ -58,7 +59,8 @@ spec:
           imagePullPolicy: Always
           name: app
           ports:
-            - containerPort: 8000
+            - containerPort: 80
+              name: "http"
           resources: {}
           tty: true
           workingDir: /usr/src/app
