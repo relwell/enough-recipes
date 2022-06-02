@@ -44,17 +44,6 @@ spec:
                   name: ersecrets
                   key: database_url
                   optional: false
-            - name: ES_HOSTS
-              valueFrom:
-                secretKeyRef:
-                  name: ersecrets
-                  key: es_hosts
-                  optional: false
-            - name: KAFKA_BROKERS
-              valueFrom:
-                secretKeyRef:
-                  name: ersecrets
-                  key: kafka_brokers
           image: relwell/enough-recipes:latest
           imagePullPolicy: Always
           name: app

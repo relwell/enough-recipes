@@ -127,6 +127,26 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-ES_HOSTS = os.environ.get("ES_HOSTS", "http://localhost:9200")
 
-KAFKA_BROKERS = os.environ.get("KAFKA_BROKERS", "localhost:9092")
+def get_es_hosts() -> str:
+    """Retrieve es hosts, depending on K8s settings."""
+    if "ES_ELASTICSEARCH_SERVICE_HOST" in os.environ:
+        return (
+            "http://"
+            + os.environ["ES_ELASTICSEARCH_SERVICE_HOST"]
+            + ":"
+            + os.environ["ES_ELASTICSEARCH_PORT_9200_TCP_PORT"]
+        )
+    return os.environ.get("ES_HOSTS", "http://localhost:9200")
+
+
+def get_kafka_brokers() -> str:
+    """Retrieve Kafka brokers, depending on K8s ssettings."""
+    if "BROKER_KAFKA_SERVICE_HOST" in os.environ:
+        return f"{os.environ['BROKER_KAFKA_SERVICE_HOST']}:9092"
+    return os.environ.get("KAFKA_BROKERS", "localhost:9092")
+
+
+ES_HOSTS = get_es_hosts()
+
+KAFKA_BROKERS = get_kafka_brokers()

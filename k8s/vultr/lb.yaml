@@ -29,7 +29,7 @@ metadata:
 spec:
   type: LoadBalancer
   selector:
-    app: app
+    io.kompose.service: app
   ports:
     - port: 80
       name: "http"

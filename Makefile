@@ -35,3 +35,7 @@ kubemanage:
 build-and-push:
 	docker -f prod.Dockerfile -t relwell/enough-recipes build . \
 	docker push relwell/enough-recipes
+
+.PHONY: kubedashpw
+kubedashpw:
+	kubectl -n kubernetes-dashboard create token admin-user | pbcopy
