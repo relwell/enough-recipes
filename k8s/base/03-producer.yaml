@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: producer
+  namespace: enough-recipes
+spec:
+  schedule: "19 5 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+            - name: dr
+          containers:
+            - args:
+              - poetry
+              - run
+              - python
+              - manage.py
+              - run_recipe_producer
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: ersecrets
+                      key: database_url
+                      optional: false
+              image: relwell/enough-recipes:latest
+              imagePullPolicy: Always
+              name: app
+              resources: {}
+              tty: true
+              workingDir: /usr/src/app
+          restartPolicy: OnFailure

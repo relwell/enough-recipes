@@ -16,6 +16,7 @@ spec:
   selector:
     matchLabels:
       io.kompose.service: app
+      app: app
   strategy:
     type: Recreate
   template:
@@ -26,6 +27,7 @@ spec:
       creationTimestamp: null
       labels:
         io.kompose.service: app
+        app: app
     spec:
       imagePullSecrets:
         - name: dr
@@ -33,10 +35,14 @@ spec:
         - args:
             - poetry
             - run
-            - python
-            - manage.py
-            - runserver
-            - 0.0.0.0:80
+            - gunicorn
+            - --bind=0.0.0.0:80
+            - --access-logfile=-
+            # - --bind=0.0.0.0:443
+            # - --keyfile=/etc/secrets/ssl_key
+            # - --certfile=/etc/secrets/ssl_cert
+            - --threads=4
+            - enough_recipes.wsgi
           env:
             - name: DATABASE_URL
               valueFrom:
@@ -47,11 +53,44 @@ spec:
           image: relwell/enough-recipes:latest
           imagePullPolicy: Always
           name: app
+          volumeMounts:
+            - name: secrets
+              mountPath: /etc/secrets
           ports:
             - containerPort: 80
               name: "http"
           resources: {}
           tty: true
           workingDir: /usr/src/app
+          livenessProbe:
+            httpGet:
+              # scheme: HTTPS
+              # path: /
+              # port: 443
+              scheme: HTTP
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 3
       restartPolicy: Always
+      volumes:
+        - name: secrets
+          secret:
+            secretName: ersecrets
 status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-svc
+  namespace: enough-recipes
+  labels:
+    app: app-svc
+spec:
+  selector:
+    app: app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      name: "http"

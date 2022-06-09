@@ -144,6 +144,8 @@ def handle_recipe(recipe_json_string: str) -> Optional[models.Recipe]:
         return recipe
     except json.JSONDecodeError as json_error:
         logging.error("Could not decode: %s", json_error)
+    except Exception as e:
+        logging.error("Unhandled exception: %s", e)
     return None
 
 
@@ -156,9 +158,12 @@ def yield_recipe_messages():
     ):
         recipe = handle_recipe(consumer_message.value)
         if recipe:
-            es_document = recipe.to_es_document
-            logging.warning("Yielding ES document: %s", es_document)
-            yield es_document
+            try:
+                es_document = recipe.to_es_document
+                logging.warning("Yielding ES document: %s", es_document)
+                yield es_document
+            except Exception as e:
+                logging.error("Unhandled exception: %s", e)
 
 
 def run_recipe_consumer():
@@ -180,6 +185,8 @@ def find_recipes(query):
 
 
 class RecipeHit:
+    """A recipe hit."""
+
     def __init__(self, hit):
         """Initialize the class."""
         self.hit = hit

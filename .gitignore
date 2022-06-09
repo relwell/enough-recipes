@@ -163,3 +163,5 @@ esdata
 
 .terraform
 *.tfstate*
+
+secret.yaml

@@ -33,8 +33,13 @@ kubemanage:
 
 .PHONY: build-and-push
 build-and-push:
-	docker -f prod.Dockerfile -t relwell/enough-recipes build . \
+	docker build -f prod.Dockerfile -t relwell/enough-recipes . ;\
 	docker push relwell/enough-recipes
+
+.PHONY: build-and-push-nginx
+build-and-push-nginx:
+	docker build -f nginx.Dockerfile -t relwell/enough-recipes-nginx . ;\
+	docker push relwell/enough-recipes-nginx
 
 .PHONY: kubedashpw
 kubedashpw:

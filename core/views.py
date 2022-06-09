@@ -8,7 +8,6 @@ from core.recipes import find_recipes, RecipeHit
 
 def index(request):
     """Index view."""
-    print("what")
     return render(request, "core/index.html", {"form": SearchForm()})
 
 
