@@ -16,9 +16,7 @@ spec:
     app: nginx
   ports:
     - port: 80
-      targetPort: 80
       name: "http"
     - port: 443
       name: "https"
-      targetPort: 80
 
