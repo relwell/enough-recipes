@@ -7,7 +7,6 @@ metadata:
     service.beta.kubernetes.io/vultr-loadbalancer-https-ports: "443"
     service.beta.kubernetes.io/vultr-loadbalancer-ssl: "ssl-secret"
     service.beta.kubernetes.io/vultr-loadbalancer-ssl-pass-through: "false"
-    service.beta.kubernetes.io/vultr-loadbalancer-healthcheck-port: "80"
     service.beta.kubernetes.io/vultr-loadbalancer-ssl-redirect: "true"
   name: enough-recipes-lb
   namespace: enough-recipes
