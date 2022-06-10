@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.mw-editsection {
+  display: none;
+}
+
+.mw-parser-output h2 {
+  font-weight: bold;
+  margin: 10px 0 5px 0;
+}
+
+.mw-parser-output ul {
+  padding-left: 0;
+  margin: 5px 0;
+  list-style-position: inside;
+}
+
+.mw-parser-output ul li {
+  list-style-type: disc;
+  margin-bottom: 2px;
+}
+
+.mw-parser-output ol {
+  padding-left: 0;
+  list-style-position: inside;
+  margin: 5px 0;
+}
+
+.mw-parser-output ol li {
+  list-style-type: decimal;
+  margin-bottom: 2px;
+}

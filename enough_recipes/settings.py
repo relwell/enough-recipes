@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "tailwind",
+    "enough_recipes_theme",
+    "django_browser_reload",
     "core",
 ]
 
@@ -51,6 +54,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -80,7 +84,7 @@ WSGI_APPLICATION = "enough_recipes.wsgi.application"
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="mssql://root:root@localhost:3306/enoughrecipes?charset=utf8mb4",
+        default="mysql://root:root@localhost:3306/enoughrecipes?charset=utf8mb4",
         conn_max_age=500,
     )
 }
@@ -150,3 +154,9 @@ def get_kafka_brokers() -> str:
 ES_HOSTS = get_es_hosts()
 
 KAFKA_BROKERS = get_kafka_brokers()
+
+TAILWIND_APP_NAME = "enough_recipes_theme"
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]

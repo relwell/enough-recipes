@@ -2,7 +2,7 @@ FROM python:3.10
 
 ENV PYTHONUNBUFFERED 1
 
-RUN apt-get update && apt-get install -y default-libmysqlclient-dev
+RUN apt-get update && apt-get install -y default-libmysqlclient-dev nodejs npm
 
 WORKDIR /usr/src/app
 

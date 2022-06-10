@@ -1,0 +1,15 @@
+<div id="search-results" class="mt-20 grid justify-items-center">
+  <div class="mb-10">
+    <h3 class="text-xl">Showing results for <i>{{query}}</i></h3>
+  </div>
+  <div id="search-results-inner" class="grid justify-items-center align grid-cols-4 gap-10 px-10 divide-x-2 divide-dashed">
+    {% for hit in hits %}
+    <div class="content-center">
+      <p class="text-lg mb-5 text-center">{{hit.title}}</p>
+      <div class="recipe-body">
+        {{hit.recipe | safe}}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>

@@ -17,11 +17,15 @@ consumer:
 
 .PHONY: producer
 producer:
-	docker compose run --rm producer
+	docker compose run --rm -d poetry run python manage.py run_recipe_producer
 
 .PHONY: manage
 manage:
 	docker compose run --rm app poetry run python manage.py $(ARGS)
+
+.PHONY: tailwind
+tailwind:
+	make manage ARGS="tailwind start"
 
 .PHONY: es
 es:

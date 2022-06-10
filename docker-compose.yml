@@ -25,7 +25,12 @@ services:
     command: "poetry run python manage.py runserver 0.0.0.0:8000"
 
   consumer:
-    <<: *app
+    build: .
+    image: relwell/enough-recipes
+    tty: true
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app
     links:
       - "mysql:mysql"
       - "elasticsearch:elasticsearch"
@@ -39,21 +44,6 @@ services:
       DJANGO_LOG_LEVEL: DEBUG
     command: poetry run python manage.py run_recipe_consumer
 
-  producer:
-    <<: *app
-    links:
-      - "mysql:mysql"
-      - "elasticsearch:elasticsearch"
-      - "broker:broker"
-    depends_on:
-      - elasticsearch
-      - mysql
-      - broker
-    environment:
-      <<: *app_env
-      DJANGO_LOG_LEVEL: DEBUG
-    command: poetry run python manage.py run_recipe_producer
-
   mysql:
     image: mysql
     command: --default-authentication-plugin=mysql_native_password
@@ -61,6 +51,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: enoughrecipes
+    ports:
+      - "3306:3306"
     volumes:
       - my-datavolume:/var/lib/mysql
 

@@ -1,9 +1,14 @@
+{% load tailwind_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   {% block title %}<title>Enough Recipes!</title>{% endblock %}
+  {% tailwind_preload_css %}
+  {% tailwind_css %}
 </head>
 <body>
-  {% block content %}{% endblock %}
+  <div class="py-20 min-h-screen bg-gradient-to-r from-cyan-200 to-grey-500 grid justify-items-center grid-cols-1 gap-1">
+    {% block content %}{% endblock %}
+  </div>
 </body>
 </html>
