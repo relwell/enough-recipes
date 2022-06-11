@@ -3,15 +3,14 @@
 import functools
 import json
 import logging
-from typing import Optional
+from typing import List, Optional
 
 import requests
-from boltons.iterutils import first
+from boltons.iterutils import first, get_path
 from bs4 import BeautifulSoup
 from django.conf import settings
 from elasticsearch import helpers
 from kafka import KafkaConsumer, KafkaProducer
-
 
 from core.es import get_es_client
 from core import models
@@ -56,7 +55,7 @@ class RecipePage:
         return self._data["title"]
 
     @functools.cached_property
-    def html(self) -> str:
+    def html(self) -> bytes:
         """Retrieve HTML from page."""
         resp = requests.get(f"https://recipes.fandom.com{self.url}")
         return resp.content
@@ -144,8 +143,8 @@ def handle_recipe(recipe_json_string: str) -> Optional[models.Recipe]:
         return recipe
     except json.JSONDecodeError as json_error:
         logging.error("Could not decode: %s", json_error)
-    except Exception as e:
-        logging.error("Unhandled exception: %s", e)
+    except Exception as exc:  # pylint: disable=broad-except
+        logging.error("Unhandled exception: %s", exc)
     return None
 
 
@@ -162,8 +161,8 @@ def yield_recipe_messages():
                 es_document = recipe.to_es_document
                 logging.warning("Yielding ES document: %s", es_document)
                 yield es_document
-            except Exception as e:
-                logging.error("Unhandled exception: %s", e)
+            except Exception as exc:  # pylint: disable=broad-except
+                logging.error("Unhandled exception: %s", exc)
 
 
 def run_recipe_consumer():
@@ -177,10 +176,10 @@ def run_recipe_consumer():
         logging.debug(result)
 
 
-def find_recipes(query):
+def find_recipes(query, size=20):
     """Find recipes."""
     return get_es_client().search(
-        index="recipes", body={"query": {"match": {"text": query}}}, size=20
+        index="recipes", query={"match": {"text": query}}, size=size
     )
 
 
@@ -192,11 +191,16 @@ class RecipeHit:
         self.hit = hit
 
     @property
-    def title(self):
+    def title(self) -> str:
         """Return title."""
         return self.hit["_source"]["title"]
 
     @property
-    def recipe(self):
+    def recipe(self) -> str:
         """Return recipe."""
         return self.hit["_source"]["recipe"]
+
+    @classmethod
+    def many_from_result(cls, search_result) -> List["RecipeHit"]:
+        """Return a list of recipes from a search result."""
+        return [cls(x) for x in get_path(search_result, ("hits", "hits"), [])]

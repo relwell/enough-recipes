@@ -25,7 +25,30 @@ boto3 = "^1.24.7"
 ipython = "^8.3.0"
 mypy = "^0.950"
 types-requests = "^2.27.27"
+black = "^22.3.0"
+pylint = "^2.14.1"
+django-stubs = {extras = ["compatible-mypy"], version = "^1.11.0"}
+pylint-django = "^2.5.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "enough_recipes.settings"
+
+[tool.pylint.master]
+load-plugins = "pylint_django"
+django-settings-module = "enough_recipes.settings"
+
+[[tool.mypy.overrides]]
+module = [
+    "boltons.*",
+    "bs4",
+    "dj_database_url",
+    "kafka.*"
+]
+ignore_missing_imports = true

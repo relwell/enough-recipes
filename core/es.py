@@ -1,18 +1,21 @@
 import logging
 
+from typing import List
+
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
 
 
+def get_es_hosts() -> List[str]:
+    """Retrieve an optional list of hosts."""
+    hosts = getattr(settings, "ES_HOSTS", "")
+    return hosts.split(",")
+
+
 def get_es_client() -> Elasticsearch:
     """Retrieve an elasticsearch client from env configs."""
-    hosts = settings.ES_HOSTS
-    hosts = hosts.split(",") if hosts else None
-
-    # we could use IAM-based auth
-    # https://elasticsearch-py.readthedocs.io/en/master/index.html#running-on-aws-with-iam
-    return Elasticsearch(hosts=hosts)
+    return Elasticsearch(hosts=list(get_es_hosts()))
 
 
 def create_index(client, index=None, mapping=None, **kwargs):

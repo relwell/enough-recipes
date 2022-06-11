@@ -1,6 +1,5 @@
+"""Django views."""
 from django.shortcuts import render
-
-from boltons.iterutils import get_path
 
 from core.forms import SearchForm
 from core.recipes import find_recipes, RecipeHit
@@ -16,7 +15,7 @@ def search(request):
     form = SearchForm(request.GET)
     query = form["query"].value()
     search_result = find_recipes(query)
-    hits = [RecipeHit(x) for x in get_path(search_result, ("hits", "hits"), [])]
+    hits = RecipeHit.many_from_result(search_result)
     return render(
         request,
         "core/search.html",

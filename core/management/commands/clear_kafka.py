@@ -12,13 +12,14 @@ class Command(BaseCommand):
     def add_arguments(self, parser) -> None:
         parser.add_argument("topic_names", nargs="+", type=str)
 
-    def handle(self, topic_names, **kwargs):
+    def handle(self, *args, **_options):
+        [topic_names] = args
         try:
             KafkaAdminClient(
                 bootstrap_servers=settings.KAFKA_BROKERS,
             ).delete_topics(topics=topic_names)
             print("Topic Deleted Successfully")
-        except UnknownTopicOrPartitionError as e:
+        except UnknownTopicOrPartitionError:
             print("Topic Doesn't Exist")
-        except Exception as e:
-            print(e)
+        except Exception as exc:  # pylint: disable=broad-except
+            print(exc)
