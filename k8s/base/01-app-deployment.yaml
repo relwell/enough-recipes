@@ -33,22 +33,27 @@ spec:
         - name: dr
       containers:
         - args:
-            - poetry
-            - run
-            - gunicorn
-            - --bind=0.0.0.0:80
-            - --access-logfile=-
-            # - --bind=0.0.0.0:443
-            # - --keyfile=/etc/secrets/ssl_key
-            # - --certfile=/etc/secrets/ssl_cert
-            - --threads=4
-            - enough_recipes.wsgi
+            - ./runserver.sh
           env:
+            - name: ENV
+              value: "prod"
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   name: ersecrets
                   key: database_url
+                  optional: false
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ersecrets
+                  key: aws_secret_access_key
+                  optional: false
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ersecrets
+                  key: aws_access_key_id
                   optional: false
           image: relwell/enough-recipes:latest
           imagePullPolicy: Always
@@ -64,9 +69,6 @@ spec:
           workingDir: /usr/src/app
           livenessProbe:
             httpGet:
-              # scheme: HTTPS
-              # path: /
-              # port: 443
               scheme: HTTP
               path: /
               port: 80

@@ -26,8 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-(qf#fl!3p!b39d1+p93z$^*(uo)0ome*s2zrifj5*=3@nw++!8"
 
+ENV = os.environ.get("ENV", "dev")
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "") == 1 or ENV == "dev"
 
 ALLOWED_HOSTS = ["*"]
 
@@ -44,6 +46,7 @@ INSTALLED_APPS = [
     "tailwind",
     "enough_recipes_theme",
     "django_browser_reload",
+    "storages",
     "core",
 ]
 
@@ -126,10 +129,20 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+STATIC_ROOT = str(BASE_DIR) + "/enough-recipes-static/"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+if ENV == "prod":
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    STATICFILES_STORAGE = "storages.backends.s3boto3.S3StaticStorage"
+    AWS_STORAGE_BUCKET_NAME = "enough-recipes-assets"
+    AWS_S3_ENDPOINT_URL = "https://ewr1.vultrobjects.com/"
+    AWS_S3_REGION_NAME = "ewr1"
+    AWS_DEFAULT_ACL = "public-read"
 
 
 def get_es_hosts() -> str:

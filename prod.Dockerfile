@@ -18,4 +18,3 @@ ADD . .
 # consumer and producer don't need this.
 # neither would any API.
 RUN poetry run python manage.py tailwind build
-

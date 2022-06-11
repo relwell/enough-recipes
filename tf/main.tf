@@ -12,3 +12,12 @@ resource "vultr_kubernetes" "k8s" {
     max_nodes     = 3
   }
 }
+
+# this is an object storage instance,
+# which contains multiple buckets.
+# there is not presently a tf provider
+# for a bucket inside an object storage instance
+resource "vultr_object_storage" "tf" {
+  cluster_id = 2
+  label      = "enough-recipes-assets"
+}
