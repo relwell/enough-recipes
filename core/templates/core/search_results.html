@@ -2,9 +2,9 @@
   <div class="mb-10">
     <h3 class="text-xl">Showing results for <i>{{query}}</i></h3>
   </div>
-  <div id="search-results-inner" class="grid justify-items-center align grid-cols-4 gap-10 px-10 divide-x-2 divide-dashed">
+  <div id="search-results-inner" class="grid justify-items-center align grid-cols-4 gap-10 px-10 py-5 divide-x-2 divide-y-2 divide-neutral-300 divide-dashed">
     {% for hit in hits %}
-    <div class="content-center">
+    <div class="content-center px-10">
       <p class="text-lg mb-5 text-center">{{hit.title}}</p>
       <div class="recipe-body">
         {{hit.recipe | safe}}

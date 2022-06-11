@@ -22,6 +22,10 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 80
+            - containerPort: 443
+          volumeMounts:
+            - name: secrets
+              mountPath: /etc/secrets
           livenessProbe:
             httpGet:
               path: /
@@ -32,6 +36,10 @@ spec:
             failureThreshold: 1
       imagePullSecrets:
         - name: dr
+      volumes:
+        - name: secrets
+          secret:
+            secretName: ersecrets
 ---
 apiVersion: v1
 kind: Service
@@ -48,3 +56,7 @@ spec:
       port: 80
       targetPort: 80
       name: "http"
+    - protocol: TCP
+      port: 443
+      targetPort: 443
+      name: "https"
