@@ -1,3 +1,5 @@
+# please note this is the image for dev.
+# see prod.Dockerfile for the prod one.
 FROM python:3.10
 
 ENV PYTHONUNBUFFERED 1
