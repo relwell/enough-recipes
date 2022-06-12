@@ -14,12 +14,12 @@ they still have some API functionality and the capability to scrape content.
 So this is a quick and dirty recipe app to kick the tires on
 a variety of Vultr's tooling, including:
 
-- Terraform Provider + Modules
-- DBaaS
-- VKE
-- Load Balancer (As a VKE Service)
-- Vultr Block Storage (Backing VKE resources)
-- Vultr Object Storage (For static assets)
+- [Vultr Terraform Provider + Modules](https://registry.terraform.io/providers/vultr/vultr/latest/docs)
+- [MySQL DBaaS](https://www.vultr.com/products/managed-databases/)
+- [VKE](https://www.vultr.com/kubernetes/)
+- [Load Balancer](https://www.vultr.com/products/load-balancers/) (As a VKE Service)
+- [Vultr Block Storage](https://www.vultr.com/products/block-storage/) (Backing VKE resources)
+- [Vultr Object Storage](https://www.vultr.com/products/object-storage/) (For static assets)
 
 This is a Django app with many things operationalized into a `Makefile`.
 
