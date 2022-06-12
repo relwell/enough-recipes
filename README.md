@@ -16,14 +16,38 @@ a variety of Vultr's tooling, including:
 
 - Terraform Provider + Modules
 - DBaaS
-- Load Balancer
 - VKE
+- Load Balancer (As a VKE Service)
+- Vultr Block Storage (Backing VKE resources)
+- Vultr Object Storage (For static assets)
 
 This is a Django app with many things operationalized into a `Makefile`.
 
-Kuberenetes configs are in the `k8s` folder. Resources you can roll out locally
+Kubernetes configs are in the `k8s` folder. Resources you can roll out locally
 live in `base`, while the Vultr-specific resources are in `vultr`.
 
 Please note that `k8s/helm` provides scripts for bootstrapping helm charts
 with the appropriate configurations to integrate properly with Vultr's
-block storage storage class.
+block storage storage class. Another way to handle this would be to
+deploy the helm charts with
+[Terraform](https://registry.terraform.io/providers/hashicorp/helm/latest/docs).
+
+We use Helm for both Kafka and Elasticsearch resources, with the arguments required
+to define the appropriate storage class to use Vultr's block storage functionality.
+
+## How Does It Work?
+
+```mermaid
+flowchart LR
+  B[Cron Task]-- Scrape -->A(Recipes Wiki)
+  B[Cron Task]-- Publish -->C{{Kafka}}
+  D[Consumer] -- Consume -->C{{Kafka}}
+  D[Consumer] -- Write -->E[(MySQL)]
+  D[Consumer] -- Write -->F[[Elasticsearch]]
+  G[Web App] -- Query -->F[[Elasticsearch]]
+```
+
+A daily cron task registered with Kubernetes runs a job
+that hits the Recipe Wiki's MediaWiki API, and uses that data
+to scrape the parsed HTML, storing it in both our MySQL database
+as well as the Elasticsearch cluster managed by Helm.

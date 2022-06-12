@@ -1,3 +1,4 @@
+"""Elasticsearch helpers."""
 import logging
 
 from typing import List
