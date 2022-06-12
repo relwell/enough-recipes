@@ -1,15 +1,36 @@
-<div id="search-results" class="mt-20 grid justify-items-center">
-  <div class="mb-10">
-    <h3 class="text-xl">Showing results for <i>{{query}}</i></h3>
-  </div>
-  <div id="search-results-inner" class="grid justify-items-center align grid-cols-4 gap-10 px-10 py-5 divide-x-2 divide-y-2 divide-neutral-300 divide-dashed">
-    {% for hit in hits %}
-    <div class="content-center px-10">
-      <p class="text-lg mb-5 text-center">{{hit.title}}</p>
-      <div class="recipe-body">
-        {{hit.recipe | safe}}
-      </div>
-    </div>
-    {% endfor %}
+{% for hit in hits %}
+<div class="content-center px-10 grow">
+  <p class="text-xl mb-5 text-center">{{hit.title}}</p>
+  <div class="recipe-body">
+    {{hit.recipe | safe}}
   </div>
 </div>
+{% endfor %}
+{% if hits|length == 20 %}
+<div id="{{scroll_id}}" class="scroll">
+  <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-10 rounded w-1/2" onclick="loadMore();">
+    More
+  </button>
+  <script type="text/javascript">
+    var scroll_id = "{{scroll_id}}";
+    function loadMore()
+    {
+      fetch(`/search_ajax?scroll_id=${scroll_id}`)
+        .then(result => result.text())
+        .then(result => {
+          document.getElementById("{{scroll_id}}").remove();
+          var parsed = (new DOMParser()).parseFromString(result, "text/html");
+          var newResults = parsed.getElementsByTagName("div");
+          var inner = document.getElementById("search-results-inner")
+          for (var i=0; i < newResults.length; i++) {
+            inner.append(newResults[i]);
+          }
+          var scrolls = parsed.getElementsByClassName("scroll");
+          if (newResults.length == 20 && scrolls.length > 0) {
+            inner.append(scrolls[0]);
+          }
+        });
+    }
+  </script>
+</div>
+{% endif %}

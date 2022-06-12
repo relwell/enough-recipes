@@ -179,8 +179,13 @@ def run_recipe_consumer():
 def find_recipes(query, size=20):
     """Find recipes."""
     return get_es_client().search(
-        index="recipes", query={"match": {"text": query}}, size=size
+        index="recipes", query={"match": {"text": query}}, size=size, scroll="10m"
     )
+
+
+def scroll_recipes(scroll_id):
+    """Retrieve recipes from previous scroll."""
+    return get_es_client().scroll(scroll_id=scroll_id, scroll="1s")
 
 
 class RecipeHit:

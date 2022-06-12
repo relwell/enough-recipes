@@ -3,6 +3,13 @@
 {% block content %}
   {% include "core/top.html" %}
   {% if query %}
-    {% include "core/search_results.html" %}
+    <div id="search-results" class="mt-20 mx-40 grid justify-items-center px-40 bg-gradient-to-r from-blue-100 to-green-100">
+      <div class="mb-10">
+        <h3 class="text-xl">Showing results for <i>{{query}}</i></h3>
+      </div>
+      <div id="search-results-inner" class="grid align grid-cols-1 gap-10 px-10 py-5 divide-y-2 divide-neutral-300 divide-dashed">
+        {% include "core/search_results.html" %}
+      </div>
+    </div>
   {% endif %}
 {% endblock %}

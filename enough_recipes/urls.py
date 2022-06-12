@@ -22,5 +22,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.index, name="index"),
     path("search", views.search, name="search"),
+    path("search_ajax", views.search_ajax, name="search_ajax"),
     path("__reload__/", include("django_browser_reload.urls")),
 ]
