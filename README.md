@@ -7,9 +7,10 @@ Funny part about that, of course, is that most of these sites aren't
 bootstrapped with a decent number of recipes.
 
 We used to be able to just pull recipes from the
-[Recipe Wiki's](https://recipes.fandom.com) MediaWiki API.
+[Recipe Wiki's](https://recipes.fandom.com) Wikia API.
 Fandom has removed that capability, but fortunately
-they still have some API functionality and the capability to scrape content.
+they still have some core MediaWiki APIs for listing
+pages, and you can still scrape their pages.
 
 So this is a quick and dirty recipe app to kick the tires on
 a variety of Vultr's tooling, including:
