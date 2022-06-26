@@ -40,8 +40,9 @@ to define the appropriate storage class to use Vultr's block storage functionali
 
 ```mermaid
 flowchart LR
-  B[Cron Task]-- Scrape -->A(Recipes Wiki)
+  B[Cron Task]-- List -->A(Recipes Wiki)
   B[Cron Task]-- Publish -->C{{Kafka}}
+  D[Cron Task]-- Scrape -->A(Recipes Wiki)
   D[Consumer] -- Consume -->C{{Kafka}}
   D[Consumer] -- Write -->E[(MySQL)]
   D[Consumer] -- Write -->F[[Elasticsearch]]
